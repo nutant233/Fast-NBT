@@ -31,12 +31,14 @@ public abstract class ItemStackMixin {
 
     @Redirect(method = "<init>(Lnet/minecraft/nbt/CompoundTag;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/nbt/CompoundTag;contains(Ljava/lang/String;)Z"))
     private boolean capNBT(CompoundTag tag, String key) {
-        this.capNBT = tag.tags.get(key) instanceof CompoundTag compoundTag ? compoundTag : null;
         return false;
     }
 
     @Redirect(method = "<init>(Lnet/minecraft/nbt/CompoundTag;)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/nbt/CompoundTag;contains(Ljava/lang/String;I)Z"))
     private boolean tag(CompoundTag tag, String key, int tagType) {
+        if (tag.tags.get("ForgeCaps") instanceof CompoundTag compoundTag) {
+            this.capNBT = compoundTag;
+        }
         if (tag.tags.get(key) instanceof CompoundTag compoundTag) {
             this.tag = compoundTag;
             this.getItem().verifyTagAfterLoad(this.tag);
