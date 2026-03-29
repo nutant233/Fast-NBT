@@ -43,6 +43,7 @@ public abstract class CompoundTagMixin {
                 tags.compute(s, (k, v) -> {
                     if (v instanceof CompoundTag c) {
                         c.merge(compoundTag);
+                        return c;
                     }
                     return compoundTag.copy();
                 });
