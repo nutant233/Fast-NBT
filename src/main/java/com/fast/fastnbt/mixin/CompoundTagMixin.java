@@ -11,7 +11,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Map;
 
-@Mixin(CompoundTag.class)
+@Mixin(value = CompoundTag.class,priority = 100000)
 public abstract class CompoundTagMixin {
 
     @Final

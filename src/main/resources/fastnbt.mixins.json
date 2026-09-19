@@ -2,12 +2,15 @@
   "required": true,
   "minVersion": "0.8",
   "package": "com.fast.fastnbt.mixin",
+  "plugin": "com.fast.fastnbt.Config",
   "refmap": "fastnbt.refmap.json",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "CompoundTagMixin",
-    "ItemStackMixin",
-    "NbtUtilsMixin"
+    "blockstate.NbtUtilsMixin",
+    "blockstatecodec.BlockStateCodecMixin",
+    "itemstack.ItemStackMixin",
+    "nbtio.NbtAccounterMixin"
   ],
   "injectors": {
     "defaultRequire": 1,

@@ -1,4 +1,4 @@
-package com.fast.fastnbt.mixin;
+package com.fast.fastnbt.mixin.blockstate;
 
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.*;
 
 import java.util.Optional;
 
-@Mixin(NbtUtils.class)
+@Mixin(value = NbtUtils.class,priority = 100000)
 public class NbtUtilsMixin {
 
     @Shadow

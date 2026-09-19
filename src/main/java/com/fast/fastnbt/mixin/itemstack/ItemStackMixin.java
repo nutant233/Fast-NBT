@@ -1,4 +1,4 @@
-package com.fast.fastnbt.mixin;
+package com.fast.fastnbt.mixin.itemstack;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 import javax.annotation.Nullable;
 
-@Mixin(ItemStack.class)
+@Mixin(value = ItemStack.class,priority = 100000)
 public abstract class ItemStackMixin {
 
     @Shadow
@@ -81,17 +81,5 @@ public abstract class ItemStackMixin {
             this.tag.remove(key);
             if (this.tag.isEmpty()) this.tag = null;
         }
-    }
-
-    /**
-     * @author nutant233
-     * @reason optimize
-     */
-    @Overwrite
-    public boolean isEnchanted() {
-        if (this.tag != null && this.tag.tags.get("Enchantments") instanceof ListTag listTag) {
-            return !listTag.list.isEmpty();
-        }
-        return false;
     }
 }
