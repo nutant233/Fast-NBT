@@ -8,6 +8,7 @@
     "CompoundTagMixin",
     "blockstate.NbtUtilsMixin",
     "blockstatecodec.BlockStateCodecMixin",
+    "nbtaccounter.NbtAccounterMixin",
     "nbtio.NbtAccounterMixin"
   ],
   "injectors": {

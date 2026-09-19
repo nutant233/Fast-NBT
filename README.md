@@ -25,6 +25,7 @@ This is a mixin-based mod: it rewrites vanilla methods. Everything is switchable
 | `blockState` | on | `NbtUtils.readBlockState` and `getDataVersion` take `Name`/`Properties` straight from the backing map |
 | `blockStateCodec` | on | Chunk section palettes (`BlockState.CODEC`) are decoded from the map instead of walking the DFU codec chain. The largest win |
 | `nbtIo` | on | Unlimited NBT readers skip a byte-accounting pass whose result is discarded — every chunk load, level.dat and playerdata |
+| `nbtAccounter` | on | Removes `NbtAccounter`'s byte quota, depth limit and UTF length scan entirely. Faster than `nbtIo`, but nothing caps the size or nesting of the NBT that is read any more — see the notes |
 
 `CompoundTag.write`, `merge` and the `get*` family are also rewritten to walk the tag map directly, with no
 `contains()` + `get()` pair. That mixin has no feature key: only the global switch controls it.
@@ -65,6 +66,11 @@ Feature keys are camelCase.
 - The 1.20.1 branch also has an `itemStack` feature. Item NBT became data components in 1.20.5, so on 1.21.1
   an `ItemStack` has no `tag`/`capNBT` fields and no `ItemStack(CompoundTag)` constructor to optimize, and
   that feature has no counterpart here.
+- `nbtAccounter` (on by default) removes the limits vanilla puts on NBT reads: the 2 MB quota on the
+  client-bound packet codecs, the 100 MB level.dat quota and the 512-deep nesting limit. It is the fastest
+  option, but a server then accepts arbitrarily large tags from clients, and deeply nested tags recurse
+  instead of being rejected with a clean exception. Turn it off — with `nbtIo` left on — if that matters.
+  While it is on, `nbtIo`'s mixin is skipped, because both replace the same method.
 - Only canonical data takes a fast path; malformed input is reported as a decode error instead of being
   guessed at. One deliberate exception to vanilla: an unknown block id is an error here where vanilla resolved
   it to air, so chunk palette decoding promotes it to air itself and logs one line per bad entry.

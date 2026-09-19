@@ -60,6 +60,14 @@ public final class Config implements IMixinConfigPlugin {
                         "chunk, level.dat and playerdata read uses"
         );
 
+        registerFeaturePackage(
+                "nbtAccounter",
+                "Unchecked NBT Reads",
+                "Removes NbtAccounter's byte quota, depth limit and UTF length scan entirely, so nothing caps " +
+                        "the size or nesting of NBT that is read. The safe variant is nbtIo, which only skips " +
+                        "the UTF scan for unlimited readers; use that one on public servers"
+        );
+
         configFile = new File(FMLLoader.getGamePath().toFile(), "config/fastnbt.toml");
 
         for (var feature : FEATURE_PACKAGES.values()) {
@@ -158,6 +166,11 @@ public final class Config implements IMixinConfigPlugin {
         }
     }
 
+    private static boolean isEnabled(String featureName) {
+        var config = featureConfigs.get(featureName);
+        return config != null && config.enabled;
+    }
+
     private static void logConfigSummary() {
         LOGGER.info("=== Fast NBT Configuration ===");
         LOGGER.info("Global enabled: {}", enabled);
@@ -193,6 +206,13 @@ public final class Config implements IMixinConfigPlugin {
             // (e.g. CompoundTagMixin) apply unconditionally.
             LOGGER.info("ApplyMixin (ungated, feature '{}' not registered): {}", featureName, mixinClassName);
             return true;
+        }
+
+        // Both features overwrite NbtAccounter#readUTF: nbtAccounter removes the accounting completely, so
+        // when it is on, the nbtIo fast path has nothing left to skip.
+        if ("nbtIo".equals(featureName) && isEnabled("nbtAccounter")) {
+            LOGGER.info("Skipping {} - the nbtAccounter feature supersedes it", mixinClassName);
+            return false;
         }
 
         var config = featureConfigs.get(featureName);
