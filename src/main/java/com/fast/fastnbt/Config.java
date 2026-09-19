@@ -63,7 +63,8 @@ public final class Config implements IMixinConfigPlugin {
         registerFeaturePackage(
                 "nbtAccounter",
                 "Unchecked NBT Reads",
-                "Removes NbtAccounter's byte quota, depth limit and UTF length scan entirely, so nothing caps " +
+                "Removes NbtAccounter's byte quota, depth limit and UTF length scan entirely, and hands out one " +
+                        "shared accounter for unlimited reads instead of allocating one per read. Nothing caps " +
                         "the size or nesting of NBT that is read. The safe variant is nbtIo, which only skips " +
                         "the UTF scan for unlimited readers; use that one on public servers"
         );

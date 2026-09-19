@@ -8,9 +8,11 @@
 <ul>
   <li><strong><code>nbtAccounter</code> — unchecked NBT reads.</strong> Removes <code>NbtAccounter</code>'s
   accounting entirely: no byte quota, no 512-deep nesting limit and no UTF length scan, on every read path
-  rather than only the unlimited ones. It is faster than <code>nbtIo</code> (which is kept as the safe variant)
-  but it also removes the limits that protect a server from oversized tags sent by clients, and deeply nested
-  tags recurse instead of being rejected. Turn it off on public servers.</li>
+  rather than only the unlimited ones. Unlimited reads also share one accounter instead of allocating a new
+  one per read, which is where a chunk read and every trusted-tag packet used to pay. It is faster than
+  <code>nbtIo</code> (which is kept as the safe variant) but it also removes the limits that protect a server
+  from oversized tags sent by clients, and deeply nested tags recurse instead of being rejected. Turn it off
+  on public servers.</li>
 </ul>
 
 <h3>Changed</h3>
