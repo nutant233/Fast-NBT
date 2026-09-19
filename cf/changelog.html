@@ -1,0 +1,54 @@
+<!-- CurseForge changelog. CurseForge sanitizes HTML: supported tags only,
+     <style>/<script>/class/id/style attributes are stripped. -->
+
+<h2>1.20-26.9.1-forge</h2>
+
+<h3>Fixed</h3>
+
+<ul>
+  <li><strong>NBT data loss in <code>CompoundTag.merge</code>.</strong> The merge of a nested compound
+  mutated the target and then replaced it with a copy of the incoming tag, so every key that existed only in
+  the target disappeared. This affects anything that merges NBT: <code>/data merge</code>, the loot table NBT
+  functions (<code>set_nbt</code>, <code>set_contents</code>), placing a block with a
+  <code>BlockEntityTag</code>, spawn eggs carrying an <code>EntityTag</code>, and every mod that merges into
+  its own NBT or saved data. This is the only data-loss fix since 1.2 — see
+  <a href="https://github.com/nutant233/Fast-NBT/issues/4">issue #4</a>.</li>
+</ul>
+
+<h3>Added</h3>
+
+<ul>
+  <li><strong>Configuration.</strong> <code>config/fastnbt.toml</code> is generated on first launch and gives
+  every optimization its own switch, plus a global <code>enabled</code>. Injection is decided by the mixin
+  config plugin, so turning a feature off puts the vanilla method back instead of just skipping it at
+  runtime.</li>
+  <li><strong><code>blockStateCodec</code></strong> — chunk section palettes resolve the canonical
+  <code>{Name, Properties}</code> tag directly instead of walking the full DFU codec chain (dispatch codec,
+  registry lookup, one <code>MapCodec</code> per property, plus <code>DataResult</code> /
+  <code>Either</code> / <code>Pair</code> / <code>Optional</code> allocations) on every chunk load and save.
+  Decoding only: encoding is untouched, so saved chunks and network packets stay byte-identical.</li>
+  <li><strong><code>nbtIo</code></strong> — unlimited NBT readers skip a byte-accounting pass whose result is
+  discarded. That covers every chunk load, plus level.dat and playerdata.</li>
+  <li><strong><code>itemStack</code> and <code>blockState</code></strong> — the existing ItemStack and
+  block-state NBT paths are now switchable features instead of always-on.</li>
+</ul>
+
+<h3>Changed</h3>
+
+<ul>
+  <li>The <code>ItemStack#isEnchanted</code> replacement was removed; vanilla's implementation is used
+  again.</li>
+  <li>The <code>CompoundTag</code> rewrites have no separate switch — the global <code>enabled</code> flag
+  controls them.</li>
+  <li>All mixins now carry <code>priority = 100000</code>.</li>
+</ul>
+
+<h3>Notes</h3>
+
+<ul>
+  <li>Only canonical data takes a fast path. Non-canonical data is reported as a decode error rather than
+  guessed at, with one deliberate exception to vanilla: an unknown block id is an error here where vanilla
+  resolved it to air, so chunk palette decoding promotes it to air itself and logs one line per entry.</li>
+  <li>Full description, configuration and compatibility notes:
+  <a href="https://github.com/nutant233/Fast-NBT#readme">README</a>.</li>
+</ul>
