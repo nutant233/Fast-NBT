@@ -64,9 +64,11 @@ Feature keys are camelCase.
 
 ## Notes
 
-- Only canonical data takes a fast path; malformed input keeps vanilla's result and error behaviour.
-- `blockStateCodec` never touches encoding, so saved chunks and packets are byte-identical. Unknown blocks
-  resolve to air and unknown `Properties` keys are ignored, exactly as in vanilla.
+- Only canonical data takes a fast path; malformed input is reported as a decode error instead of being
+  guessed at. One deliberate exception to vanilla: an unknown block id is an error here where vanilla resolved
+  it to air, so chunk palette decoding promotes it to air itself and logs one line per bad entry.
+- `blockStateCodec` never touches encoding, so saved chunks and packets are byte-identical, and `Properties`
+  keys the block does not have are ignored, as in vanilla.
 - Every rewritten target is an `@Overwrite`, redirect or inject with no `.safe.` variant; other NBT-caching
   mods should be tested alongside this one.
 - `blockStateCodec` replaces the `BlockState.CODEC` field itself, at the end of `BlockState`'s static

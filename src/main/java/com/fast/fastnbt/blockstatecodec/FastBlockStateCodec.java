@@ -79,8 +79,8 @@ public final class FastBlockStateCodec {
             return DataResult.error(() -> "Not a valid resource location: " + name.data);
         }
 
-        // BuiltInRegistries.BLOCK is a DefaultedRegistry: an unknown id resolves to air, exactly like
-        // Registry.byNameCodec() does. Never resolve the block through anything else.
+        // An unknown id is not a block. Vanilla's byNameCodec() resolves it to air through the defaulted
+        // registry; here it is a decode error, which chunk palette decoding promotes to air on its own.
         Block block = ForgeRegistries.BLOCKS.getValue(id);
         if (block == null) {
             return DataResult.error(() -> "Not a valid block: " + name);

@@ -71,9 +71,10 @@ controls them.</p>
 <h2>How it stays safe</h2>
 
 <ul>
-  <li><strong>Only canonical data takes a fast path.</strong> Anything malformed keeps vanilla's result and
-  error behaviour — an unknown block id resolves to air and a key in <code>Properties</code> that the block
-  does not have is ignored, exactly as in vanilla.</li>
+  <li><strong>Only canonical data takes a fast path.</strong> Anything that is not canonical is reported as a
+  decode error instead of being guessed at, and a key in <code>Properties</code> that the block does not have
+  is ignored, exactly as in vanilla. For chunk palettes the caller turns a failed entry into air, so a world
+  referencing blocks from an uninstalled mod still loads — with one log line per entry.</li>
   <li><strong>Encoding is never replaced.</strong> The palette optimization only speeds up decoding, so saved
   chunks and network packets stay byte-identical.</li>
   <li><strong>Injection conflicts.</strong> The optimizations replace or redirect vanilla methods and ship no
