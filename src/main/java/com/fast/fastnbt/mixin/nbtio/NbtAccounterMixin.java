@@ -1,31 +1,34 @@
 package com.fast.fastnbt.mixin.nbtio;
 
 import net.minecraft.nbt.NbtAccounter;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * {@link NbtAccounter#UNLIMITED} only overrides accountBytes, so the inherited readUTF still walks every
- * character of every key and string just to feed a counter whose result is thrown away. Unlimited accounters
- * are what NbtIo.read(DataInput) uses, i.e. every region-file chunk load plus level.dat / playerdata reads.
+ * {@link NbtAccounter#unlimitedHeap()} is what NbtIo.read(DataInput) and the trusted-tag network codecs use,
+ * and it hands out a fresh accounter with a Long.MAX_VALUE quota on every call. The inherited readUTF still
+ * walks every character of every key and string just to feed a counter whose result is discarded, so that
+ * walk is skipped when the quota cannot be reached.
  */
 @Mixin(NbtAccounter.class)
 public abstract class NbtAccounterMixin {
+
+    @Shadow
+    @Final
+    private long quota;
 
     @Shadow
     public abstract void accountBytes(long bytes);
 
     /**
      * @author nutant233
-     * @reason readUTF is a Forge-added method, so it carries no obfuscation mapping and must not be remapped.
+     * @reason skip the byte-accounting scan that unlimited readers throw away
      */
-    @Overwrite(remap = false)
+    @Overwrite
     public String readUTF(String data) {
-        if ((Object) this == NbtAccounter.UNLIMITED) return data;
+        if (quota == Long.MAX_VALUE) return data;
         accountBytes(2); //Header length
         if (data == null) return data;
         int len = data.length();

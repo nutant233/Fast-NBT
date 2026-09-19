@@ -33,7 +33,7 @@ public class NbtUtilsMixin {
     @Overwrite
     public static BlockState readBlockState(HolderGetter<Block> blockGetter, CompoundTag tag) {
         if (tag.tags.get("Name") instanceof StringTag stringTag) {
-            Optional<? extends Holder<Block>> optional = blockGetter.get(ResourceKey.create(Registries.BLOCK, new ResourceLocation(stringTag.data)));
+            Optional<? extends Holder<Block>> optional = blockGetter.get(ResourceKey.create(Registries.BLOCK, ResourceLocation.parse(stringTag.data)));
             if (optional.isPresent()) {
                 Block block = optional.get().value();
                 BlockState blockstate = block.defaultBlockState();

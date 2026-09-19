@@ -1,6 +1,35 @@
 <!-- CurseForge changelog. CurseForge sanitizes HTML: supported tags only,
      <style>/<script>/class/id/style attributes are stripped. -->
 
+<h2>1.21.1-26.9.1-neoforge</h2>
+
+<h3>Changed</h3>
+
+<ul>
+  <li><strong>Ported to Minecraft 1.21.1 / NeoForge 21.1.x.</strong> Java 21, ModDevGradle's
+  <code>neoForge</code> plugin and Gradle 9.7.1. The mixin config is declared in
+  <code>META-INF/neoforge.mods.toml</code>, no refmap is needed (NeoForge 1.21.1 runs on official names), and
+  the access transformers now use official field names (<code>CompoundTag.tags</code>,
+  <code>ListTag.list</code>/<code>type</code>, ...).</li>
+</ul>
+
+<h3>Removed</h3>
+
+<ul>
+  <li>The <code>itemStack</code> feature is not part of this branch. Item NBT became data components in 1.20.5,
+  so an <code>ItemStack</code> no longer has the <code>tag</code>/<code>capNBT</code> fields or the
+  <code>ItemStack(CompoundTag)</code> constructor that the 1.20.1 feature optimizes.</li>
+</ul>
+
+<h3>Notes</h3>
+
+<ul>
+  <li><code>blockState</code>, <code>blockStateCodec</code>, <code>nbtIo</code> and the ungated
+  <code>CompoundTag</code> rewrites carried over unchanged. All four mixins were verified on a 1.21.1 dev
+  server: chunks generate, save and load, and <code>CompoundTag</code>, <code>BlockState</code>,
+  <code>NbtUtils</code> and <code>NbtAccounter</code> all come out transformed.</li>
+</ul>
+
 <h2>1.20-26.9.1-forge</h2>
 
 <h3>Fixed</h3>

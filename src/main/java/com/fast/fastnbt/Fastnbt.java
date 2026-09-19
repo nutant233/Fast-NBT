@@ -1,6 +1,6 @@
 package com.fast.fastnbt;
 
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.fml.common.Mod;
 
 @Mod(Fastnbt.MODID)
 public class Fastnbt {

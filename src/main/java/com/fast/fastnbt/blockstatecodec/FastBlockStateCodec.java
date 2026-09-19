@@ -16,8 +16,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.Property;
-import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.ForgeRegistry;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -79,12 +77,7 @@ public final class FastBlockStateCodec {
             return DataResult.error(() -> "Not a valid resource location: " + name.data);
         }
 
-        // An unknown id is not a block. Vanilla's byNameCodec() resolves it to air through the defaulted
-        // registry; here it is a decode error, which chunk palette decoding promotes to air on its own.
-        Block block = ForgeRegistries.BLOCKS.getValue(id);
-        if (block == null) {
-            return DataResult.error(() -> "Not a valid block: " + name);
-        }
+        Block block = BuiltInRegistries.BLOCK.get(id);
         StateDefinition<Block, BlockState> definition = block.getStateDefinition();
         BlockState state = block.defaultBlockState();
 

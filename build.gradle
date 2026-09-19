@@ -1,51 +1,32 @@
 plugins {
     id 'java-library'
-    id 'eclipse'
-    id 'idea'
     id 'maven-publish'
-    alias libs.plugins.modDevGradleLegacy
+    id 'idea'
+    id 'net.neoforged.moddev' version '2.0.141'
 }
 
 version = mod_version
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
-repositories {
-    flatDir {
-        dir "libs"
-    }
-
-    exclusiveContent {
-        forRepository { maven { url = "https://cursemaven.com" } }
-        filter { includeGroup("curse.maven") }
-    }
+base {
+    archivesName = mod_id
 }
 
-dependencies {
-    annotationProcessor 'org.spongepowered:mixin:0.8.7:processor'
-}
-
-tasks.withType(JavaCompile).configureEach {
-    options.encoding = "UTF-8"
-}
-
-mixin {
-    add sourceSets.main, "${mod_id}.refmap.json"
-    config "${mod_id}.mixins.json"
-}
-
-legacyForge {
-    version = "${minecraft_version}-${forge_version}"
-
-    parchment {
-        minecraftVersion = parchment_minecraft_version
-        mappingsVersion = parchment_mappings_version
-    }
+neoForge {
+    version = project.neo_version
 
     runs {
         client {
             client()
             gameDirectory.set(file('run/client'))
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        server {
+            server()
+            programArgument '--nogui'
+            gameDirectory.set(file('run/server'))
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
     }
@@ -55,38 +36,22 @@ legacyForge {
             sourceSet(sourceSets.main)
         }
     }
-
-    accessTransformers = project.files('src/main/resources/META-INF/accesstransformer.cfg')
 }
 
-
-base {
-    archivesName = mod_id
-}
-
-afterEvaluate {
-    tasks.withType(org.gradle.jvm.tasks.Jar).configureEach {
-        manifest.attributes([
-                'MixinConfigs': "${mod_id}.mixins.json",
-                'Specification-Title': project.name,
-                'Specification-Version': mod_version,
-                'Implementation-Title': base.archivesName,
-                'Implementation-Version': version,
-                'Name': 'com/fast/fastnbt/mixin',
-                'Sealed': 'true'
-        ])
-    }
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = "UTF-8"
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
     var replaceProperties = [
-            version                 : version,
-            mod_id                  : mod_id,
-            mod_license             : mod_license,
-            mod_name                : mod_name,
-            mod_description         : mod_description,
-            mod_url                 : mod_url,
-            mod_issue_tracker       : mod_issue_tracker
+            version             : version,
+            mod_id              : mod_id,
+            mod_license         : mod_license,
+            mod_name            : mod_name,
+            mod_authors         : mod_authors,
+            mod_description     : mod_description,
+            loader_version_range: loader_version_range,
+            neo_version_range   : neo_version_range
     ]
     inputs.properties replaceProperties
     expand replaceProperties
@@ -94,4 +59,4 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
     into "build/generated/sources/modMetadata"
 }
 sourceSets.main.resources.srcDir generateModMetadata
-legacyForge.ideSyncTask generateModMetadata
+neoForge.ideSyncTask generateModMetadata

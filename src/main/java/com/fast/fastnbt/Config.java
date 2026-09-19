@@ -3,7 +3,7 @@ package com.fast.fastnbt;
 import com.electronwill.nightconfig.core.CommentedConfig;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.electronwill.nightconfig.core.io.WritingMode;
-import net.minecraftforge.fml.loading.FMLLoader;
+import net.neoforged.fml.loading.FMLLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.objectweb.asm.tree.ClassNode;
@@ -38,13 +38,6 @@ public final class Config implements IMixinConfigPlugin {
     private static final Map<String, FeatureConfig> featureConfigs = new HashMap<>();
 
     static {
-        registerFeaturePackage(
-                "itemStack",
-                "ItemStack Loading",
-                "Faster ItemStack deserialization from NBT: probes the backing map once instead of the " +
-                        "vanilla contains() checks, and reads tag/ForgeCaps straight from the map"
-        );
-
         registerFeaturePackage(
                 "blockState",
                 "BlockState Loading",
