@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.*;
 
 import java.util.Optional;
 
-@Mixin(value = NbtUtils.class,priority = 100000)
+@Mixin(value = NbtUtils.class, priority = 100000)
 public class NbtUtilsMixin {
 
     @Shadow

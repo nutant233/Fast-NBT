@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 import javax.annotation.Nullable;
 
-@Mixin(value = ItemStack.class,priority = 100000)
+@Mixin(value = ItemStack.class, priority = 100000)
 public abstract class ItemStackMixin {
 
     @Shadow

@@ -45,7 +45,9 @@ public final class FastBlockStateCodec {
     private FastBlockStateCodec() {
     }
 
-    /** Replaces the given codec with the fast wrapper; called from BlockState's static initializer. */
+    /**
+     * Replaces the given codec with the fast wrapper; called from BlockState's static initializer.
+     */
     public static Codec<BlockState> install(Codec<BlockState> original) {
         vanilla = original;
 
@@ -80,7 +82,7 @@ public final class FastBlockStateCodec {
         // BuiltInRegistries.BLOCK is a DefaultedRegistry: an unknown id resolves to air, exactly like
         // Registry.byNameCodec() does. Never resolve the block through anything else.
         Block block = ForgeRegistries.BLOCKS.getValue(id);
-        if (block==null) {
+        if (block == null) {
             return DataResult.error(() -> "Not a valid block: " + name);
         }
         StateDefinition<Block, BlockState> definition = block.getStateDefinition();

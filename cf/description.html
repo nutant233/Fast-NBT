@@ -1,0 +1,88 @@
+<!-- CurseForge project description. CurseForge sanitizes HTML: supported tags only,
+     <style>/<script>/class/id/style attributes are stripped. -->
+
+<p><strong>Fast NBT</strong> makes the NBT work Minecraft does constantly cheaper: reading tags, turning
+them into game objects, and loading them from chunks, packets, block states and ItemStacks.</p>
+
+<p>For <strong>Minecraft 1.20.1 / Forge</strong>. Requires Java 17.</p>
+
+<h2>CompoundTag</h2>
+
+<ul>
+  <li><strong>All kinds of get methods.</strong> In the vanilla game it first calls <code>contains</code> to
+  check whether the key exists, then invokes <code>get</code> — two map lookups. Fast NBT merges those two
+  operations into one and applies inlining, which greatly improves the lookup speed.</li>
+  <li><strong>Iteration.</strong> Iterating with <code>keySet</code> paired with <code>get</code> is replaced
+  by an approach that walks keys and values simultaneously, so writing and merging a compound no longer does
+  a lookup for every entry.</li>
+  <li><strong>Related classes.</strong> Operations that use those get methods in other related classes are
+  optimized too.</li>
+</ul>
+
+<h2>ItemStack, block states and NBT I/O</h2>
+
+<ul>
+  <li><strong>ItemStack loading.</strong> Reading an <code>ItemStack</code> from NBT takes <code>tag</code>
+  and <code>ForgeCaps</code> straight from the backing map instead of probing with two
+  <code>contains</code> calls, and <code>getOrCreateTagElement</code>, <code>getTagElement</code> and
+  <code>removeTagKey</code> resolve in a single lookup.</li>
+  <li><strong>Block states.</strong> <code>NbtUtils.readBlockState</code> and
+  <code>getDataVersion</code> read <code>Name</code> and <code>Properties</code> directly, instead of going
+  through the vanilla <code>contains</code> / <code>getString</code> chain.</li>
+  <li><strong>Chunk section palettes.</strong> Each palette entry normally goes through the full DFU codec
+  chain — dispatch codec, registry lookup, one <code>MapCodec</code> per property, plus
+  <code>DataResult</code> / <code>Either</code> / <code>Pair</code> / <code>Optional</code> allocations — on
+  every chunk load and every save. Fast NBT resolves the canonical <code>{Name, Properties}</code> tag
+  straight from the map. This is the largest win in the mod.</li>
+  <li><strong>NBT I/O.</strong> Unlimited readers — every chunk load, plus level.dat and playerdata — skip a
+  byte-accounting pass whose result is thrown away.</li>
+</ul>
+
+<p>So the gains land where NBT is decoded in bulk: world and chunk loading, server autosaves (which re-encode
+every chunk), and the inventory, block entity and entity payloads that carry tagged
+<code>ItemStack</code>s. Fewer temporary objects on the palette path also means less GC pressure.</p>
+
+<p>This is not a general performance mod: it touches nothing outside NBT, and it cannot help a workload that
+is bounded by disk or network. The savings scale with how much NBT a pack decodes, and are smallest in a
+plain vanilla world.</p>
+
+<h2>Configuration</h2>
+
+<p><code>config/fastnbt.toml</code> is generated on first launch and gives each optimization its own switch:</p>
+
+<pre><code>enabled = true              # master switch for everything below
+
+[features.itemStack]
+    enabled = true
+
+[features.blockState]
+    enabled = true
+
+[features.blockStateCodec]
+    enabled = true
+
+[features.nbtIo]
+    enabled = true
+</code></pre>
+
+<p>The <code>CompoundTag</code> rewrites have no separate switch; the global <code>enabled</code> flag
+controls them.</p>
+
+<h2>How it stays safe</h2>
+
+<ul>
+  <li><strong>Only canonical data takes a fast path.</strong> Anything malformed keeps vanilla's result and
+  error behaviour — an unknown block id resolves to air and a key in <code>Properties</code> that the block
+  does not have is ignored, exactly as in vanilla.</li>
+  <li><strong>Encoding is never replaced.</strong> The palette optimization only speeds up decoding, so saved
+  chunks and network packets stay byte-identical.</li>
+  <li><strong>Injection conflicts.</strong> The optimizations replace or redirect vanilla methods and ship no
+  non-destructive variant, so if another mod targets the same method, the last one applied wins. Test large
+  packs before shipping them.</li>
+</ul>
+
+<h2>Requirements</h2>
+
+<p>Minecraft 1.20.1, Forge 47.x, Java 17.</p>
+
+<p>Licensed under the GNU LGPL v3.0 or later.</p>

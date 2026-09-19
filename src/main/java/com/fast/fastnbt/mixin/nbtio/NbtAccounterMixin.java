@@ -2,6 +2,8 @@ package com.fast.fastnbt.mixin.nbtio;
 
 import net.minecraft.nbt.NbtAccounter;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Overwrite;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -12,13 +14,30 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * are what NbtIo.read(DataInput) uses, i.e. every region-file chunk load plus level.dat / playerdata reads.
  */
 @Mixin(NbtAccounter.class)
-public class NbtAccounterMixin {
+public abstract class NbtAccounterMixin {
 
-    // readUTF is a Forge-added method, so it carries no obfuscation mapping and must not be remapped.
-    @Inject(method = "readUTF", at = @At("HEAD"), cancellable = true, remap = false)
-    private void fastnbt$skipUtfAccounting(String data, CallbackInfoReturnable<String> cir) {
-        if ((Object) this == NbtAccounter.UNLIMITED) {
-            cir.setReturnValue(data);
+    @Shadow
+    public abstract void accountBytes(long bytes);
+
+    /**
+     * @author nutant233
+     * @reason readUTF is a Forge-added method, so it carries no obfuscation mapping and must not be remapped.
+     */
+    @Overwrite(remap = false)
+    public String readUTF(String data) {
+        if ((Object) this == NbtAccounter.UNLIMITED) return data;
+        accountBytes(2); //Header length
+        if (data == null) return data;
+        int len = data.length();
+        int utflen = 0;
+        for (int i = 0; i < len; i++) {
+            int c = data.charAt(i);
+            if ((c >= 0x0001) && (c <= 0x007F)) utflen += 1;
+            else if (c > 0x07FF) utflen += 3;
+            else utflen += 2;
         }
+        accountBytes(utflen);
+        return data;
     }
+
 }

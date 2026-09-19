@@ -19,14 +19,18 @@ public final class Config implements IMixinConfigPlugin {
     public static final Logger LOGGER = LogManager.getLogger(MODID);
     public static final int CONFIG_VERSION = 1;
 
-    /** Mixin sub-package holding one directory per feature; the directory name IS the feature key. */
+    /**
+     * Mixin sub-package holding one directory per feature; the directory name IS the feature key.
+     */
     private static final String MIXIN_SUBPACKAGE = "com.fast.fastnbt.mixin.";
 
     private static final File configFile;
 
     private static final Map<String, FeaturePackage> FEATURE_PACKAGES = new LinkedHashMap<>();
 
-    /** Maps a mixin sub-package directory name to its feature key (they differ only in case). */
+    /**
+     * Maps a mixin sub-package directory name to its feature key (they differ only in case).
+     */
     private static final Map<String, String> DIR_FEATURE = new HashMap<>();
 
     public static boolean enabled;
