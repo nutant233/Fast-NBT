@@ -25,7 +25,7 @@ This is a mixin-based mod: it rewrites vanilla methods. Everything is switchable
 | `blockState` | on | `NbtUtils.readBlockState` and `getDataVersion` take `Name`/`Properties` straight from the backing map |
 | `blockStateCodec` | on | Chunk section palettes (`BlockState.CODEC`) are decoded from the map instead of walking the DFU codec chain. The largest win |
 | `nbtIo` | on | Unlimited NBT readers skip a byte-accounting pass whose result is discarded — every chunk load, level.dat and playerdata |
-| `nbtAccounter` | on | Removes `NbtAccounter`'s byte quota, depth limit and UTF length scan entirely, and reuses one accounter for unlimited reads instead of allocating one per read. Faster than `nbtIo`, but nothing caps the size or nesting of the NBT that is read any more — see the notes |
+| `nbtAccounter` | on | Incompatible with Packet Fixer — both mods modify the same NBT size / depth limits. If you use Packet Fixer, disable nbtAccounter (keep nbtIo on). Removes `NbtAccounter`'s byte quota, depth limit and UTF length scan entirely, and reuses one accounter for unlimited reads instead of allocating one per read. Faster than `nbtIo`, but nothing caps the size or nesting of the NBT that is read any more — see the notes |
 
 `CompoundTag.write`, `merge` and the `get*` family are also rewritten to walk the tag map directly, with no
 `contains()` + `get()` pair. That mixin has no feature key: only the global switch controls it.
