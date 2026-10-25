@@ -1,13 +1,9 @@
 package com.fast.fastnbt.mixin.blockstate;
 
-import net.minecraft.core.Holder;
-import net.minecraft.core.HolderGetter;
-import net.minecraft.core.registries.Registries;
+import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
-import net.minecraft.nbt.NumericTag;
 import net.minecraft.nbt.StringTag;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -19,6 +15,10 @@ import org.spongepowered.asm.mixin.*;
 
 import java.util.Optional;
 
+/**
+ * 1.19.2 signature: {@code readBlockState(CompoundTag)} resolves the block through {@link Registry#BLOCK}.
+ * There is no {@code getDataVersion} helper on this version, so only the block state path is replaced.
+ */
 @Mixin(value = NbtUtils.class, priority = 100000)
 public class NbtUtilsMixin {
 
@@ -31,25 +31,22 @@ public class NbtUtilsMixin {
      * @reason optimize
      */
     @Overwrite
-    public static BlockState readBlockState(HolderGetter<Block> blockGetter, CompoundTag tag) {
+    public static BlockState readBlockState(CompoundTag tag) {
         if (tag.tags.get("Name") instanceof StringTag stringTag) {
-            Optional<? extends Holder<Block>> optional = blockGetter.get(ResourceKey.create(Registries.BLOCK, new ResourceLocation(stringTag.data)));
-            if (optional.isPresent()) {
-                Block block = optional.get().value();
-                BlockState blockstate = block.defaultBlockState();
-                if (tag.tags.get("Properties") instanceof CompoundTag compoundtag) {
-                    var statedefinition = block.getStateDefinition();
-                    for (var e : compoundtag.tags.entrySet()) {
-                        if (e.getValue() instanceof StringTag string) {
-                            var property = statedefinition.getProperty(e.getKey());
-                            if (property != null) {
-                                blockstate = fastnbt$setValueHelper(blockstate, property, e.getKey(), string.data, tag);
-                            }
+            Block block = Registry.BLOCK.get(new ResourceLocation(stringTag.data));
+            BlockState blockstate = block.defaultBlockState();
+            if (tag.tags.get("Properties") instanceof CompoundTag compoundtag) {
+                var statedefinition = block.getStateDefinition();
+                for (var e : compoundtag.tags.entrySet()) {
+                    if (e.getValue() instanceof StringTag string) {
+                        var property = statedefinition.getProperty(e.getKey());
+                        if (property != null) {
+                            blockstate = fastnbt$setValueHelper(blockstate, property, e.getKey(), string.data, tag);
                         }
                     }
                 }
-                return blockstate;
             }
+            return blockstate;
         }
         return Blocks.AIR.defaultBlockState();
     }
@@ -63,15 +60,5 @@ public class NbtUtilsMixin {
             LOGGER.warn("Unable to read property: {} with value: {} for blockstate: {}", propertyName, properties, blockStateTag.toString());
             return stateHolder;
         }
-    }
-
-    /**
-     * @author nutant233
-     * @reason optimize
-     */
-    @Overwrite
-    public static int getDataVersion(CompoundTag tag, int defaultValue) {
-        if (tag.tags.get("DataVersion") instanceof NumericTag numericTag) return numericTag.getAsInt();
-        return defaultValue;
     }
 }
