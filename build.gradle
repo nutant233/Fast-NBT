@@ -37,15 +37,17 @@ mixin {
 legacyForge {
     version = "${minecraft_version}-${forge_version}"
 
-    parchment {
-        minecraftVersion = parchment_minecraft_version
-        mappingsVersion = parchment_mappings_version
-    }
-
     runs {
         client {
             client()
             gameDirectory.set(file('run/client'))
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        server {
+            server()
+            programArgument '--nogui'
+            gameDirectory.set(file('run/server'))
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
     }

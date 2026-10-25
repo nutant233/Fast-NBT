@@ -1,6 +1,6 @@
 # Fast NBT
 
-NBT performance optimizations for **Minecraft 1.20.1 / Forge**.
+NBT performance optimizations for **Minecraft 1.19.2 / Forge**.
 
 This mod optimizes various methods in the `CompoundTag` class:
 
@@ -23,9 +23,9 @@ This is a mixin-based mod: it rewrites vanilla methods. Everything is switchable
 | Feature | Default | What it does |
 |---|---|---|
 | `itemStack` | on | `ItemStack(CompoundTag)` reads `tag`/`ForgeCaps` from the backing map instead of probing with two `contains()` calls; `getOrCreateTagElement`, `getTagElement` and `removeTagKey` resolve in one lookup |
-| `blockState` | on | `NbtUtils.readBlockState` and `getDataVersion` take `Name`/`Properties` straight from the backing map |
+| `blockState` | on | `NbtUtils.readBlockState` takes `Name`/`Properties` straight from the backing map |
 | `blockStateCodec` | on | Chunk section palettes (`BlockState.CODEC`) are decoded from the map instead of walking the DFU codec chain. The largest win |
-| `nbtIo` | on | Unlimited NBT readers skip a byte-accounting pass whose result is discarded — every chunk load, level.dat and playerdata |
+| `nbtIo` | on | Unlimited NBT readers skip a bit-accounting pass whose result is discarded — every chunk load, level.dat and playerdata |
 
 `CompoundTag.write`, `merge` and the `get*` family are also rewritten to walk the tag map directly, with no
 `contains()` + `get()` pair. That mixin has no feature key: only the global switch controls it.
@@ -39,7 +39,7 @@ The `CompoundTag` savings above are the same idea; the other paths give up this 
 | `ItemStack(CompoundTag)` | two `contains(key, type)` probes for `tag`/`ForgeCaps` | direct map reads, no probe |
 | `NbtUtils.readBlockState` | `contains` + `getString` per property | one lookup per property |
 | chunk section palettes | the full DFU chain per entry: dispatch codec, registry lookup, one `MapCodec` per property, plus `DataResult`/`Either`/`Pair`/`Optional` allocations | `Name`/`Properties` read straight from the map |
-| chunk, level.dat and playerdata reads | a byte accounting scan over every key and string | skipped when the accounter is unlimited |
+| chunk, level.dat and playerdata reads | a bit accounting scan over every key and string | skipped when the accounter is unlimited |
 
 So the gains land where NBT is decoded in bulk: **chunk and world loading**, **server autosaves** (which
 re-encode every chunk), and **inventory, block entity and entity payloads** that carry tagged `ItemStack`s.
@@ -64,6 +64,8 @@ Feature keys are camelCase.
 
 ## Notes
 
+- 1.19.2 has no `NbtUtils.getDataVersion` and its `readBlockState` takes only the `CompoundTag`, resolving
+  the block through `Registry.BLOCK`. The `blockState` feature therefore replaces only that method here.
 - Only canonical data takes a fast path; malformed input is reported as a decode error instead of being
   guessed at. One deliberate exception to vanilla: an unknown block id is an error here where vanilla resolved
   it to air, so chunk palette decoding promotes it to air itself and logs one line per bad entry.
@@ -77,11 +79,12 @@ Feature keys are camelCase.
 ## Building
 
 ```bash
-./gradlew build      # jar in build/libs/
-./gradlew runClient  # dev client, shared run/client directory
+./gradlew build       # jar in build/libs/
+./gradlew runClient   # dev client, run/client
+./gradlew runServer   # dev server (--nogui), run/server - needs run/server/eula.txt
 ```
 
-Requires Minecraft 1.20.1, Forge 47.x and Java 17. On startup each applied mixin logs `ApplyMixin: <class>`;
+Requires Minecraft 1.19.2, Forge 43.x and Java 17. On startup each applied mixin logs `ApplyMixin: <class>`;
 a default config applies 5 of them.
 
 ## License

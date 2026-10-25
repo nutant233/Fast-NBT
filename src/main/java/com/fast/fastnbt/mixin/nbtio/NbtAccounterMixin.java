@@ -4,20 +4,20 @@ import net.minecraft.nbt.NbtAccounter;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 /**
- * {@link NbtAccounter#UNLIMITED} only overrides accountBytes, so the inherited readUTF still walks every
- * character of every key and string just to feed a counter whose result is thrown away. Unlimited accounters
- * are what NbtIo.read(DataInput) uses, i.e. every region-file chunk load plus level.dat / playerdata reads.
+ * {@link NbtAccounter#UNLIMITED} only overrides the accounting method, so the inherited readUTF still walks
+ * every character of every key and string just to feed a counter whose result is thrown away. Unlimited
+ * accounters are what NbtIo.read(DataInput) uses, i.e. every region-file chunk load plus level.dat and
+ * playerdata reads.
+ *
+ * <p>1.19.2 accounts in bits ({@code accountBits}): 16 for the two byte length prefix, 8 per encoded byte.
  */
 @Mixin(NbtAccounter.class)
 public abstract class NbtAccounterMixin {
 
     @Shadow
-    public abstract void accountBytes(long bytes);
+    public abstract void accountBits(long bits);
 
     /**
      * @author nutant233
@@ -26,7 +26,7 @@ public abstract class NbtAccounterMixin {
     @Overwrite(remap = false)
     public String readUTF(String data) {
         if ((Object) this == NbtAccounter.UNLIMITED) return data;
-        accountBytes(2); //Header length
+        accountBits(16); //Header length
         if (data == null) return data;
         int len = data.length();
         int utflen = 0;
@@ -36,7 +36,7 @@ public abstract class NbtAccounterMixin {
             else if (c > 0x07FF) utflen += 3;
             else utflen += 2;
         }
-        accountBytes(utflen);
+        accountBits(8L * utflen);
         return data;
     }
 

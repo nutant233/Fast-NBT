@@ -1,6 +1,29 @@
 <!-- CurseForge changelog. CurseForge sanitizes HTML: supported tags only,
      <style>/<script>/class/id/style attributes are stripped. -->
 
+<h2>1.19-26.9.1-forge</h2>
+
+<h3>Changed</h3>
+
+<ul>
+  <li><strong>Ported to Minecraft 1.19.2 / Forge 43.x</strong> (developed against 43.5.2). The same five mixins
+  ship: the ungated <code>CompoundTag</code> rewrites plus <code>itemStack</code>, <code>blockState</code>,
+  <code>blockStateCodec</code> and <code>nbtIo</code>.</li>
+</ul>
+
+<h3>Notes</h3>
+
+<ul>
+  <li>1.19.2 differs in three places: <code>NbtUtils.readBlockState</code> takes only the
+  <code>CompoundTag</code> and resolves the block through <code>Registry.BLOCK</code> (there is no
+  <code>getDataVersion</code> helper to optimize there), the accounter counts bits
+  (<code>accountBits</code>) instead of bytes, and the NBT fields keep the same SRG names as 1.20.1, so the
+  access transformer is unchanged.</li>
+  <li>All five mixins were verified on a 1.19.2 dev server: the world generated, and
+  <code>CompoundTag</code>, <code>NbtUtils</code>, <code>NbtAccounter</code>, <code>BlockState</code> and
+  <code>ItemStack</code> all came out transformed.</li>
+</ul>
+
 <h2>1.20-26.9.1-forge</h2>
 
 <h3>Fixed</h3>
